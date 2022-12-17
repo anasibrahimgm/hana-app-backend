@@ -12,6 +12,7 @@ import { jwtPrivateKey } from 'src/config';
 
 var validator = require('validator');
 var jwt = require('jsonwebtoken');
+var bcrypt = require('bcryptjs');
 
 @Injectable()
 export class UserService {
@@ -33,7 +34,15 @@ export class UserService {
       });
     }
 
-    const newUser = new this.userModel(user);
+    let salt = await bcrypt.genSalt(13);
+    let hashedPassword = await bcrypt.hash(user.password, salt);
+
+    const newUser = new this.userModel({
+      name: user.name,
+      email,
+      password: hashedPassword,
+    });
+
     await newUser.save();
 
     if (!newUser) {
