@@ -4,7 +4,12 @@ export class createUserDto {
   readonly password: string;
 }
 
-export class loginUserDto {
+export class loggedInUserDto {
   readonly email: string;
   readonly token: string;
+}
+
+export class loginUserDto {
+  readonly email: string;
+  readonly password: string;
 }

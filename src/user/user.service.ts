@@ -7,7 +7,7 @@ import {
 import { User } from './user.interface';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { loginUserDto } from './user.types.dto';
+import { loggedInUserDto, loginUserDto } from './user.types.dto';
 import { jwtPrivateKey } from 'src/config';
 
 var validator = require('validator');
@@ -18,7 +18,7 @@ var bcrypt = require('bcryptjs');
 export class UserService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
 
-  async register(user: User): Promise<loginUserDto> {
+  async register(user: User): Promise<loggedInUserDto> {
     const email = user.email;
 
     const existingUser = await this.userModel.findOne({ email });
@@ -52,7 +52,27 @@ export class UserService {
     return await this.getUserDataForLogin(newUser);
   }
 
-  private async getUserDataForLogin(user: User): Promise<loginUserDto> {
+  async login(dto: loginUserDto): Promise<loggedInUserDto> {
+    const email = dto.email;
+
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException({
+        email: `User with this email doesn't exist`,
+      });
+    }
+
+    let passwordCompare = await bcrypt.compare(dto.password, user.password);
+    if (!passwordCompare) {
+      throw new BadRequestException({
+        password: `Incorrect password.`,
+      });
+    }
+
+    return await this.getUserDataForLogin(user);
+  }
+
+  private async getUserDataForLogin(user: User): Promise<loggedInUserDto> {
     let token = jwt.sign(
       { data: user.id },
       jwtPrivateKey,
