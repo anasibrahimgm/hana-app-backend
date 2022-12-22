@@ -1,9 +1,13 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { createUserDto, loggedInUserDto as loggedInUserDto, loginUserDto } from './user.types.dto';
+import {
+  createUserDto,
+  loggedInUserDto as loggedInUserDto,
+  loginUserDto,
+} from './user.types.dto';
 import { User } from './user.interface';
 import { UserService } from './user.service';
 
-@Controller('user')
+@Controller('api/user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -15,5 +19,10 @@ export class UserController {
   @Post('login')
   login(@Body() dto: loginUserDto): Promise<loggedInUserDto> {
     return this.userService.login(dto);
+  }
+
+  @Post('validatetoken')
+  validateToken(@Body() dto: loggedInUserDto): Promise<boolean> {
+    return this.userService.validateToken(dto);
   }
 }

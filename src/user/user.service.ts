@@ -72,6 +72,38 @@ export class UserService {
     return await this.getUserDataForLogin(user);
   }
 
+  async validateToken(dto: loggedInUserDto): Promise<any> {
+    const email = dto.email;
+    let token: 'valid' | 'invalid' | 'expired' = 'valid';
+
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException({
+        email: `User with this email doesn't exist`,
+      });
+    }
+
+    await jwt.verify(dto.token, jwtPrivateKey, (err, decoded) => {
+      if (err) {
+        token = 'invalid';
+
+        if (err.name === 'TokenExpiredError') {
+          token = 'expired';
+        }
+
+        // if (err.name === 'JsonWebTokenError' && err.message === 'jwt malformed') {
+        if (err.name === 'JsonWebTokenError') {
+        }
+      } else if (user.id !== decoded.data) {
+        throw new BadRequestException({
+          token: `Corrupt token provided`,
+        });
+      }
+    });
+
+    return { token };
+  }
+
   private async getUserDataForLogin(user: User): Promise<loggedInUserDto> {
     let token = jwt.sign(
       { data: user.id },
