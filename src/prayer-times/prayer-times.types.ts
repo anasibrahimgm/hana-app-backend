@@ -1,5 +1,12 @@
 export type Prayer = {
-  name: 'Fajr' | 'Sunrise' | 'Dhuhr' | 'Asr' | 'Maghrib' | "Isha'a";
+  name:
+    | 'Fajr'
+    | 'Sunrise'
+    | 'Dhuhr'
+    | 'Asr'
+    | 'Maghrib'
+    | "Isha'a"
+    | 'Fajr tomrrow';
   time: number;
 };
 

@@ -7,6 +7,6 @@ export class PrayerTimesController {
 
   @Get('next-prayer')
   getNextPrayer() {
-    return this.service.getNextPrayer({ escapeSunrise: true });
+    return this.service.getNextPrayer();
   }
 }
