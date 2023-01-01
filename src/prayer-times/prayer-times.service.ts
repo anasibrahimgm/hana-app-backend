@@ -135,6 +135,27 @@ export class PrayerTimesService {
       `Next prayer is ${nextPrayer.name} ` +
       `at ${nextPrayerDate.getHours()}:${nextPrayerDate.getMinutes()}`;
 
+    let diff = nextPrayer.time - now;
+    let diffHours = diff / (1000 * 60 * 60);
+    diffHours = Math.floor(diffHours);
+
+    let diffMinutes = (diff / (1000 * 60)) % 60;
+    diffMinutes = Math.floor(diffMinutes);
+
+    msg += ` in `;
+
+    if (diffHours === 1) {
+      msg += `1 hour`;
+    } else if (diffHours !== 0) {
+      msg += `${diffHours} hours`;
+    }
+
+    if (diffMinutes === 1) {
+      msg += ` and 1 minute.`;
+    } else if (diffMinutes !== 0) {
+      msg += ` and ${diffMinutes} minutes.`;
+    }
+
     return {
       nextPrayer,
       msg,
