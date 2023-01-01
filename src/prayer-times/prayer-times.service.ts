@@ -8,11 +8,9 @@ export class PrayerTimesService {
     const browser = await puppeteer.launch({
       defaultViewport: { width: 1920, height: 1080, isMobile: false },
     });
-    const page = await browser.newPage();
 
-    await page.goto(
-      'https://www.muslimpro.com/Prayer-times-Bremen-Germany-2944388',
-    );
+    const page = await browser.newPage();
+    await page.goto(this.getThisMonthsLink());
 
     /*
     const btnCookiesRejectAll = await page.$('#onetrust-reject-all-handler');
@@ -42,14 +40,27 @@ export class PrayerTimesService {
 
     const todayRow = await page.$(todayRowSelector);
 
-    const tomorrowRow = await page.evaluateHandle(
-      (el) => el.nextElementSibling,
-      todayRow,
-    );
-
-    const todayPrayers = await tomorrowRow.$$eval('td.prayertime', (elements) =>
+    const todayPrayers = await todayRow.$$eval('td.prayertime', (elements) =>
       elements.map((e) => e.textContent),
     );
+
+    let tomorrowRow: any;
+
+    if (this.isTodayLastDayOfTheMonth() === false) {
+      tomorrowRow = await page.evaluateHandle(
+        (el) => el.nextElementSibling,
+        todayRow,
+      );
+    } else {
+      const pageTomorrow = await browser.newPage();
+      let nextMonthsLink = this.getNextMonthsLink();
+      await pageTomorrow.goto(nextMonthsLink);
+
+      let tomorrowRowSelector = `table.prayer-times tr:nth-child(2)`;
+      await page.waitForSelector('table.prayer-times');
+
+      tomorrowRow = await pageTomorrow.$(tomorrowRowSelector);
+    }
 
     const tomorrowPrayers = await tomorrowRow.$$eval(
       'td.prayertime',
@@ -101,6 +112,8 @@ export class PrayerTimesService {
 
     prayers.sort((a, b) => a.time - b.time);
 
+    console.log('prayers', prayers);
+
     let date = new Date();
     let now = date.getTime();
 
@@ -138,5 +151,29 @@ export class PrayerTimesService {
     date.setMinutes(minutes);
 
     return date.getTime();
+  }
+
+  private getThisMonthsLink(): string {
+    let now = new Date();
+
+    return `https://www.muslimpro.com/Prayer-times-Bremen-Germany-2944388?date=${now.getFullYear()}-${
+      now.getMonth() + 1
+    }`;
+  }
+
+  private isTodayLastDayOfTheMonth(): boolean {
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return tomorrow.getDate() === 1;
+  }
+
+  private getNextMonthsLink(): string {
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return `https://www.muslimpro.com/Prayer-times-Bremen-Germany-2944388?date=${tomorrow.getFullYear()}-${
+      tomorrow.getMonth() + 1
+    }`;
   }
 }
