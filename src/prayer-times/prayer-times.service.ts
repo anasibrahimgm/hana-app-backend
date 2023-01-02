@@ -112,8 +112,6 @@ export class PrayerTimesService {
 
     prayers.sort((a, b) => a.time - b.time);
 
-    console.log('prayers', prayers);
-
     let date = new Date();
     let now = date.getTime();
 
@@ -131,9 +129,12 @@ export class PrayerTimesService {
 
     let nextPrayer: Prayer = filtered[0];
     let nextPrayerDate = new Date(nextPrayer.time);
+    let nextPrayerHours = `${nextPrayerDate.getHours()}`.padStart(2, '0');
+    let nextPrayerMinutes = `${nextPrayerDate.getMinutes()}`.padStart(2, '0');
+
     let msg =
       `Next prayer is ${nextPrayer.name} ` +
-      `at ${nextPrayerDate.getHours()}:${nextPrayerDate.getMinutes()}`;
+      `at ${nextPrayerHours}:${nextPrayerMinutes}`;
 
     let diff = nextPrayer.time - now;
     let diffHours = diff / (1000 * 60 * 60);
@@ -142,18 +143,18 @@ export class PrayerTimesService {
     let diffMinutes = (diff / (1000 * 60)) % 60;
     diffMinutes = Math.floor(diffMinutes);
 
-    msg += ` in `;
+    if (diffHours !== 0 || diffMinutes !== 0) {
+      msg += ` in `;
 
-    if (diffHours === 1) {
-      msg += `1 hour`;
-    } else if (diffHours !== 0) {
-      msg += `${diffHours} hours`;
-    }
+      if (diffHours !== 0) {
+        msg += `${diffHours} hour${diffHours !== 1 ? 's' : ''} and `;
+      }
 
-    if (diffMinutes === 1) {
-      msg += ` and 1 minute.`;
-    } else if (diffMinutes !== 0) {
-      msg += ` and ${diffMinutes} minutes.`;
+      if (diffMinutes !== 0) {
+        msg += `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+      }
+    } else {
+      msg += ` which is now!`;
     }
 
     return {
